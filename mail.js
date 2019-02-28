@@ -15,12 +15,15 @@ var mailOptions = {
   text: 'TEXT WALA TU VAS CONFIRMER FRR'
 };
 
-function sendMail() {
+function sendMail(type, username) {
+    mailOptions.to = username;
+    if (type == "Create_User") {
         transporter.sendMail(mailOptions, function(error, info){
-          if (error) {
+        if (error) {
             console.log(error);
-          } else {
+        } else {
             console.log('Email sent: ' + info.response);
-          }
-        });
-}
+        }
+    });
+    }
+} 
