@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var sha256 = require('sha256');
 var bodyParser = require('body-parser');
+var tools = require('../tools/tokenValid');
 
 router.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -16,24 +17,24 @@ var Token = db.JDR.collection('tokens');
 
 
 router.post('/users/new/', function (req, res) {
-    if (!req.body.login || !req.body.password)
-        return res.status(400).send("Need a login and a password")
+    if (!req.body.login || !req.body.password || !req.body.email)
+        return res.status(400).send("Need a login, a password and an email.")
     User.find({"login":req.body.login}, function (err, users) {
-        var i = 0;
-        if (users === [])
-            res.status(500).send("There was a problem adding the information to the database.");
-        while (users[i] != undefined) {
-            if (users[i].login == req.body.login)
-                return res.status(403).send("Login already used.");
-            i = i + 1;
-        }
-        User.insert({
-            login : req.body.login,
-            password: sha256(sha256(req.body.password)),
-        }, 
-        function (err, user) {
-            if (err) return res.status(500).send("There was a problem adding the information to the database.");
-            res.status(200).send(user);
+        if (users[0] !== undefined)
+            return res.status(403).send("Login already used.");
+        User.find({"email":req.body.email}, function (err, userst) {
+            var i = 0;
+            if (userst[0] !== undefined)
+                return res.status(403).send("Email already used.");
+            User.insert({
+                login : req.body.login,
+                email : req.body.email,
+                password: sha256(sha256(req.body.password)),
+            }, 
+            function (err, user) {
+                if (err) return res.status(500).send("There was a problem adding the information to the database.");
+                res.status(200).send(user);
+            });
         });
     });
 });
@@ -76,24 +77,8 @@ router.get('/users/login', function (req, res) {
     });
 });
 
-
-function tokenIsValid(token, res, callback) {
-    if (!token) {
-        res.status(400).send("Need a token");
-        callback(-1);
-        return;
-    }
-    Token.find({"token":token}, function(err, tokens) {
-        if (tokens[0] === undefined) {
-            callback(false);
-        } else {
-            callback(true);
-        }
-    })
-}
-
 router.get('/users/token/valid', function (req, res) {
-    tokenIsValid(req.query.token, res, function(token) {
+    tools.tokenIsValid(req.query.token, res, function(token) {
         if (token !== -1)
             res.status(200).send(token);
     });
