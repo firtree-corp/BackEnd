@@ -20,6 +20,7 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "mongojs": "^2.6.0",
+    "nodemailer": "^5.1.1",
     "sha256": "^0.2.0"
   }
 }

@@ -15,8 +15,9 @@ var mailOptions = {
   text: 'TEXT WALA TU VAS CONFIRMER FRR'
 };
 
-function sendMail(type, username) {
-    mailOptions.to = username;
+function sendMail(type, email, token) {
+    mailOptions.to = email;
+    mailOptions.text = "http://localhost:3300/confirme?token=" + token;
     if (type == "Create_User") {
         transporter.sendMail(mailOptions, function(error, info){
         if (error) {
@@ -26,4 +27,7 @@ function sendMail(type, username) {
         }
     });
     }
-} 
+}
+
+var mail = {sendMail};
+module.exports = mail;
