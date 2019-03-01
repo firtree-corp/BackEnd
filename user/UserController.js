@@ -20,7 +20,7 @@ var Token = db.JDR.collection('tokens');
 router.post('/users/new/', function (req, res) {
     if (!req.body.login || !req.body.password || !req.body.email)
         return res.status(400).send("Need a login, a password and an email.")
-    if (req.body.login.indexOf("@") === -1) {
+    if (req.body.login.indexOf("@") !== -1) {
         return res.status(400).send("Invalid login")
     }
     User.find({"login":req.body.login}, function (err, users) {
