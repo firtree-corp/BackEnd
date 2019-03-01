@@ -77,10 +77,13 @@ function createNewToken(userId) {
 router.get('/users/login', function (req, res) {
     if (!req.query.login || !req.query.password)
         return res.status(400).send("Need a login and a password")
-    User.find({"login": req.query.login, "password": req.query.password}, function (err, users) {
+    var test2 = {"email": req.query.login,"password": req.query.password}
+    var test = {"login": req.query.login,"password": req.query.password}
+    var logormail = (req.query.login.indexOf("@") === -1) ? test : test2;
+    User.find(logormail, function (err, users) {
         if (users[0] === undefined)
             return res.status(404).send("Invalid login or password");
-        if (err) return res.status(500).send("There was a problem finding the users.");
+        if (err) return res.status(500).send("There was a problem finding the user.");
         if (users[0].verifiedAccount == false)
             return res.status(401).send("Email has not been confirmed");
 
