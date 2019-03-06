@@ -115,27 +115,17 @@ router.get('/users/token/valid', function (req, res) {
 });
 
 router.put('/users/forget_password/', function (req, res) {
-    console.log(req.body.email)
-    if (!req.body.login || !req.body.email)
+    if (!req.body.email)
         return res.status(400).send("Need a login or an email.")
-    User.find({"login":req.body.login}, function (err, users) {
-        if (users[0] === undefined)
-            return res.status(404).send("Invalid login");
+    var newPassword = generator.generate({
+        length: 10,
+        numbers: true
+    });
+    User.update({"email":req.body.email}, { $set: {"password": sha256(sha256(newPassword))}}, function (err, users) {
+        if (users.n == 0) return res.status(400).send({msg:"Cant find this email in database."})
         if (err) return res.status(500).send("There was a problem finding the user.");
-        if (users[0].verifiedAccount == false)
-            return res.status(401).send("Email has not been confirmed");
-        User.find({"email":req.body.email}, function (err, userst) {
-            var newPassword = generator.generate({
-                length: 10,
-                numbers: true
-            });
-            User.update({"password": req.query.password}, { $set: {"password": sha256(sha256(newPassword))}},
-            function (err, user) {
-                if (err) return res.status(500).send("There was a problem adding the information to the database.");
-                res.status(200).send(user);
-                mail.sendMail("Reset_Password", req.body.email, newPassword);
-            });
-        });
+        mail.sendMail("Reset_Password", req.body.email, newPassword);
+        res.status(200).send("A password has been sent to your address mail.");
     });
 });
 
