@@ -4,6 +4,7 @@ var sha256 = require('sha256');
 var bodyParser = require('body-parser');
 var tools = require('../tools/tokenValid');
 var mail = require('../mail');
+var generator = require('generate-password');
 
 router.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -111,6 +112,31 @@ router.get('/users/token/valid', function (req, res) {
             res.status(200).send(token);
     });
 
+});
+
+router.put('/users/forget_password/', function (req, res) {
+    console.log(req.body.email)
+    if (!req.body.login || !req.body.email)
+        return res.status(400).send("Need a login or an email.")
+    User.find({"login":req.body.login}, function (err, users) {
+        if (users[0] === undefined)
+            return res.status(404).send("Invalid login");
+        if (err) return res.status(500).send("There was a problem finding the user.");
+        if (users[0].verifiedAccount == false)
+            return res.status(401).send("Email has not been confirmed");
+        User.find({"email":req.body.email}, function (err, userst) {
+            var newPassword = generator.generate({
+                length: 10,
+                numbers: true
+            });
+            User.update({"password": req.query.password}, { $set: {"password": sha256(sha256(newPassword))}},
+            function (err, user) {
+                if (err) return res.status(500).send("There was a problem adding the information to the database.");
+                res.status(200).send(user);
+                mail.sendMail("Reset_Password", req.body.email, newPassword);
+            });
+        });
+    });
 });
 
 module.exports = router;
