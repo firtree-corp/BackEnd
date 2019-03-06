@@ -8,7 +8,6 @@ Space where the data is stored and handle. This part is  here to help the exchan
 ## Requirements
 
  * [Nodejs](https://nodejs.org/en/download/)
- * [MongoDB](https://github.com/mongodb/mongo)
 
 ## Build
 
