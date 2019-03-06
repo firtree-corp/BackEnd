@@ -19,17 +19,18 @@ var Token = db.JDR.collection('tokens');
 
 router.post('/users/new/', function (req, res) {
     if (!req.body.login || !req.body.password || !req.body.email)
-        return res.status(400).send("Need a login, a password and an email.")
+        return res.status(400).send({msg : "Need a login, a password and an email.", value : 0})
     if (req.body.login.indexOf("@") !== -1) {
-        return res.status(400).send("Invalid login")
+        return res.status(400).send({msg: "Invalid login", value : 1})
     }
     User.find({"login":req.body.login}, function (err, users) {
         if (users[0] !== undefined)
-            return res.status(403).send("Login already used.");
+            return res.status(403).send({msg: "Login already used.", value : 2});
+        console.log("ici");
         User.find({"email":req.body.email}, function (err, userst) {
             var i = 0;
             if (userst[0] !== undefined)
-                return res.status(403).send("Email already used.");
+                return res.status(403).send({msg :"Email already used.", value : 3});
             var newToken = Math.floor(Math.random() * Math.floor(999999999999999)).toString();
             User.insert({
                 login : req.body.login,
@@ -40,7 +41,7 @@ router.post('/users/new/', function (req, res) {
                 verifiedAccount : false
             },
             function (err, user) {
-                if (err) return res.status(500).send("There was a problem adding the information to the database.");
+                if (err) return res.status(500).send({msg: "There was a problem adding the information to the database.", value : 4});
                 res.status(200).send(user);
                 mail.sendMail("Create_User", req.body.email, newToken);
             });
@@ -106,9 +107,9 @@ router.get('/users/login', function (req, res) {
 });
 
 router.get('/users/token/valid', function (req, res) {
-    tools.tokenIsValid(req.query.token, res, function(token) {
-        if (token !== -1)
-            res.status(200).send(token);
+    tools.tokenIsValid(req.query.token, res, function(isvalid, token) {
+        if (isvalid !== -1)
+            res.status(200).send(isvalid);
     });
 
 });
