@@ -1,10 +1,11 @@
 var nodemailer = require('nodemailer');
+var pass = require('./mdp')
 
 var transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'firtreecorp@gmail.com',
-    pass: 'dorianlebgdu34'
+    user: pass.mailuser,
+    pass: pass.mailpass
   }
 });
 
