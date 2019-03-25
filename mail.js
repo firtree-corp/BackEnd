@@ -1,10 +1,11 @@
 var nodemailer = require('nodemailer');
+var pass = require('./mdp')
 
 var transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'firtreecorp@gmail.com',
-    pass: 'dorianlebgdu34'
+    user: pass.mailuser,
+    pass: pass.mailpass
   }
 });
 
@@ -17,8 +18,8 @@ var mailOptions = {
 
 function sendMail(type, email, token) {
     mailOptions.to = email;
-    mailOptions.text = "http://localhost:3300/confirme?token=" + token;
     if (type == "Create_User") {
+        mailOptions.text = "http://localhost:3300/confirme?token=" + token;
         transporter.sendMail(mailOptions, function(error, info){
         if (error) {
             console.log(error);
@@ -27,6 +28,17 @@ function sendMail(type, email, token) {
         }
     });
     }
+    if (type == "Reset_Password") {
+      mailOptions.text = "Here is your new password :" + token;
+      transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+          console.log(error);
+      } else {
+          console.log('Email sent: ' + info.response);
+      }
+    });
+    }
+
 }
 
 var mail = {sendMail};

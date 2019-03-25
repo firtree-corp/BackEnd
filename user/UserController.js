@@ -4,6 +4,7 @@ var sha256 = require('sha256');
 var bodyParser = require('body-parser');
 var tools = require('../tools/tokenValid');
 var mail = require('../mail');
+var generator = require('generate-password');
 
 router.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -112,6 +113,21 @@ router.get('/users/token/valid', function (req, res) {
             res.status(200).send(isvalid);
     });
 
+});
+
+router.put('/users/forget_password/', function (req, res) {
+    if (!req.body.email)
+        return res.status(400).send("Need a login or an email.")
+    var newPassword = generator.generate({
+        length: 10,
+        numbers: true
+    });
+    User.update({"email":req.body.email}, { $set: {"password": sha256(sha256(newPassword))}}, function (err, users) {
+        if (users.n == 0) return res.status(400).send({msg:"Cant find this email in database."})
+        if (err) return res.status(500).send("There was a problem finding the user.");
+        mail.sendMail("Reset_Password", req.body.email, newPassword);
+        res.status(200).send("A password has been sent to your address mail.");
+    });
 });
 
 module.exports = router;
